@@ -1,6 +1,6 @@
 name: countdown_widget
-description: A new Flutter package.
-version: 1.0.0
+description: A package timer works correctly even if the app is locked.
+version: 1.0.1
 author: tbm98 <tbm98.dev@gmail.com>
 homepage: https://github.com/tbm98/countdown_widget
 repository: https://github.com/tbm98/countdown_widget
