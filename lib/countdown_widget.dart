@@ -95,6 +95,7 @@ class CountDownWidget extends StatefulWidget {
     this.onDurationRemainChanged,
     this.durationExpired,
     this.runWhenSleep = true,
+    this.autoStart = true,
   })  : assert(duration != null && builder != null),
         _duration = duration,
         super(key: key);
@@ -133,6 +134,10 @@ class CountDownWidget extends StatefulWidget {
   /// the screen, but it won't count if you call the controller.pause function.
   final bool runWhenSleep;
 
+  /// [autoStart] is flag to config timer will auto start or not, default is
+  /// true
+  final bool autoStart;
+
   Duration get duration {
     // add 999 millisecond to delay first count
     return Duration(milliseconds: _duration.inMilliseconds + 999);
@@ -159,9 +164,11 @@ class _CountDownWidgetState extends State<CountDownWidget>
     _setupController();
     _computeTime();
     WidgetsBinding.instance.addObserver(this);
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      _restartTimer();
-    });
+    if (widget.autoStart) {
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+        _restartTimer();
+      });
+    }
   }
 
   void _setupController() {
