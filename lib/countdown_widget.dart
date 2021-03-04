@@ -86,9 +86,9 @@ class CountDownController {
 /// the screen, but it won't count if you call the controller.pause function.
 class CountDownWidget extends StatefulWidget {
   const CountDownWidget({
-    Key key,
-    @required Duration duration,
-    @required this.builder,
+    Key? key,
+    required Duration duration,
+    required this.builder,
     this.onControllerReady,
     this.onExpired,
     this.onFinish,
@@ -96,28 +96,27 @@ class CountDownWidget extends StatefulWidget {
     this.durationExpired,
     this.runWhenSleep = true,
     this.autoStart = true,
-  })  : assert(duration != null && builder != null),
-        _duration = duration,
+  })  : _duration = duration,
         super(key: key);
 
   /// Widget builder when duration remain changed
   final BuildWidgetByDuration builder;
 
   /// callback return [CountDownController] when it ready to use
-  final OnControllerReady onControllerReady;
+  final OnControllerReady? onControllerReady;
 
   /// callback when timer reach to [durationExpired]
-  final VoidCallback onExpired;
+  final VoidCallback? onExpired;
 
   /// callback when timer is done
-  final VoidCallback onFinish;
+  final VoidCallback? onFinish;
 
   /// callback when duration remain changed
-  final ValueChanged<Duration> onDurationRemainChanged;
+  final ValueChanged<Duration>? onDurationRemainChanged;
 
   /// if duration remain is less than or equal [durationExpired], [onExpired]
   /// will be called, default [durationExpired] = const Duration()
-  final Duration durationExpired;
+  final Duration? durationExpired;
 
   final Duration _duration;
 
@@ -149,11 +148,11 @@ class CountDownWidget extends StatefulWidget {
 
 class _CountDownWidgetState extends State<CountDownWidget>
     with WidgetsBindingObserver {
-  Timer _timer;
-  DateTime _startTime;
-  Duration _durationRemainWhenPause;
-  DateTime _expiredTime;
-  Duration _durationRemain;
+  Timer? _timer;
+  DateTime? _startTime;
+  Duration? _durationRemainWhenPause;
+  DateTime? _expiredTime;
+  Duration? _durationRemain;
   bool _isPause = false;
   CountDownController _countDownTimerController = CountDownController();
   final Mutex _mutex = Mutex();
@@ -163,9 +162,9 @@ class _CountDownWidgetState extends State<CountDownWidget>
     super.initState();
     _setupController();
     _computeTime();
-    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance?.addObserver(this);
     if (widget.autoStart) {
-      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
         _restartTimer();
       });
     }
@@ -193,7 +192,7 @@ class _CountDownWidgetState extends State<CountDownWidget>
       if (!mounted || _timer == null) {
         return;
       }
-      if (!_timer.isActive) {
+      if (!_timer!.isActive) {
         _isPause = false;
         _computeTimeWhenResume();
         _startTimer();
@@ -206,9 +205,9 @@ class _CountDownWidgetState extends State<CountDownWidget>
       if (!mounted || _timer == null) {
         return;
       }
-      if (_timer.isActive) {
+      if (_timer!.isActive) {
         _isPause = true;
-        _timer.cancel();
+        _timer!.cancel();
         _durationRemainWhenPause = _durationRemain;
       }
     });
@@ -216,13 +215,13 @@ class _CountDownWidgetState extends State<CountDownWidget>
 
   void _computeTime() {
     _startTime = DateTime.now();
-    _expiredTime = _startTime.add(widget.duration);
+    _expiredTime = _startTime!.add(widget.duration);
     _durationRemain = widget.duration;
   }
 
   void _computeTimeWhenResume() {
     _startTime = DateTime.now();
-    _expiredTime = _startTime.add(_durationRemainWhenPause);
+    _expiredTime = _startTime!.add(_durationRemainWhenPause!);
     _durationRemain = _durationRemainWhenPause;
   }
 
@@ -239,32 +238,32 @@ class _CountDownWidgetState extends State<CountDownWidget>
   }
 
   void _handleDurationChanged() {
-    final newDurationRemain = _expiredTime.difference(DateTime.now());
+    final newDurationRemain = _expiredTime!.difference(DateTime.now());
     // if new duration have same second value to old duration => do nothing
-    if (_durationRemain.inSeconds == newDurationRemain.inSeconds) {
+    if (_durationRemain!.inSeconds == newDurationRemain.inSeconds) {
       return;
     }
     _durationRemain = newDurationRemain;
 
-    if (_durationRemain.inSeconds <=
+    if (_durationRemain!.inSeconds <=
         (widget.durationExpired ?? const Duration()).inSeconds) {
       widget.onExpired?.call();
     }
 
-    if (_durationRemain.inSeconds <= 0) {
+    if (_durationRemain!.inSeconds <= 0) {
       _durationRemain = const Duration();
-      _timer.cancel();
+      _timer!.cancel();
       widget.onFinish?.call();
     }
 
-    widget.onDurationRemainChanged?.call(_durationRemain);
+    widget.onDurationRemainChanged?.call(_durationRemain!);
 
     setState(() {});
   }
 
   void _restartTimer() {
     if (_timer?.isActive ?? false) {
-      _timer.cancel();
+      _timer!.cancel();
     }
     _computeTime();
     setState(() {});
@@ -273,14 +272,14 @@ class _CountDownWidgetState extends State<CountDownWidget>
 
   @override
   void dispose() {
-    _timer.cancel();
-    WidgetsBinding.instance.removeObserver(this);
+    _timer!.cancel();
+    WidgetsBinding.instance?.removeObserver(this);
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return widget.builder(context, _durationRemain);
+    return widget.builder(context, _durationRemain!);
   }
 
   @override
@@ -299,11 +298,11 @@ class _CountDownWidgetState extends State<CountDownWidget>
       return;
     }
     if (state == AppLifecycleState.paused) {
-      if (_timer.isActive) {
-        _timer.cancel();
+      if (_timer!.isActive) {
+        _timer!.cancel();
       }
     } else if (state == AppLifecycleState.resumed) {
-      if (!_timer.isActive && !_isPause) {
+      if (!_timer!.isActive && !_isPause) {
         // only startTimer when current state is running,
         // if current state is pause, do nothing
         _startTimer();
