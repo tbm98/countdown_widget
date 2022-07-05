@@ -1,3 +1,6 @@
+## [2.0.1] - 05/07/2022
+* Migrate to Flutter 3.0
+
 ## [2.0.0] - 04/03/2021
 * Migrate to Null safety
 

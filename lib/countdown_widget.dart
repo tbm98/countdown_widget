@@ -162,9 +162,9 @@ class _CountDownWidgetState extends State<CountDownWidget>
     super.initState();
     _setupController();
     _computeTime();
-    WidgetsBinding.instance?.addObserver(this);
+    WidgetsBinding.instance.addObserver(this);
     if (widget.autoStart) {
-      WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
         _restartTimer();
       });
     }
@@ -273,7 +273,7 @@ class _CountDownWidgetState extends State<CountDownWidget>
   @override
   void dispose() {
     _timer!.cancel();
-    WidgetsBinding.instance?.removeObserver(this);
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
