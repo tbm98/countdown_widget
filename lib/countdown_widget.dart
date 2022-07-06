@@ -6,8 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:mutex/mutex.dart';
 
 /// Widget builder when duration changed
-typedef BuildWidgetByDuration = Widget Function(
-    BuildContext context, Duration duration);
+typedef BuildWidgetByDuration = Widget Function(BuildContext context, Duration duration);
 
 /// callback this return [CountDownController] when it ready to use
 typedef OnControllerReady = void Function(CountDownController controller);
@@ -53,6 +52,7 @@ class CountDownController {
   }
 }
 
+/// {@template countdown.widget}
 /// [builder] is function callback return Widget by durationRemain, it will be
 /// called when durationRemain Changed
 ///
@@ -66,12 +66,15 @@ class CountDownController {
 ///
 /// [onDurationRemainChanged] it will be called when [duration] changed
 ///
-/// [durationExpired] is duration to check when countdown reach to timeExpire
+/// [durationExpired] is duration to check when countdown reach to timeExpire, default is 0
+///
 /// ex: if you want to set time expire when countdown to 00:30, set
 /// [durationExpired] = [Duration(seconds: 30)]
 ///
 /// [duration] is total time you want to countdown, ex: you want countdown
 /// from 01:20 -> 00:00 set [duration] = [Duration(seconds: 120)]
+///
+/// [stepDuration] is the duration of step count, default is 1 second
 ///
 /// [runWhenSleep] default is true
 ///
@@ -84,20 +87,22 @@ class CountDownController {
 /// Note, whether you set [runWhenSleep] to true or false, when the app is
 /// reopened, the timer will still count the amount of time you turn off
 /// the screen, but it won't count if you call the controller.pause function.
+/// {@endtemplate}
 class CountDownWidget extends StatefulWidget {
+  ///{@macro countdown.widget}
   const CountDownWidget({
     Key? key,
-    required Duration duration,
+    required this.duration,
     required this.builder,
+    this.stepDuration = const Duration(seconds: 1),
     this.onControllerReady,
     this.onExpired,
     this.onFinish,
     this.onDurationRemainChanged,
-    this.durationExpired,
+    this.durationExpired = const Duration(),
     this.runWhenSleep = true,
     this.autoStart = true,
-  })  : _duration = duration,
-        super(key: key);
+  }) : super(key: key);
 
   /// Widget builder when duration remain changed
   final BuildWidgetByDuration builder;
@@ -116,9 +121,13 @@ class CountDownWidget extends StatefulWidget {
 
   /// if duration remain is less than or equal [durationExpired], [onExpired]
   /// will be called, default [durationExpired] = const Duration()
-  final Duration? durationExpired;
+  final Duration durationExpired;
 
-  final Duration _duration;
+  /// total duration you want to count
+  final Duration duration;
+
+  /// the duration of step count
+  final Duration stepDuration;
 
   /// [runWhenSleep] default is true
   ///
@@ -137,17 +146,11 @@ class CountDownWidget extends StatefulWidget {
   /// true
   final bool autoStart;
 
-  Duration get duration {
-    // add 999 millisecond to delay first count
-    return Duration(milliseconds: _duration.inMilliseconds + 999);
-  }
-
   @override
   State createState() => _CountDownWidgetState();
 }
 
-class _CountDownWidgetState extends State<CountDownWidget>
-    with WidgetsBindingObserver {
+class _CountDownWidgetState extends State<CountDownWidget> with WidgetsBindingObserver {
   Timer? _timer;
   DateTime? _startTime;
   Duration? _durationRemainWhenPause;
@@ -228,8 +231,7 @@ class _CountDownWidgetState extends State<CountDownWidget>
   void _startTimer() async {
     await _mutex.protect(() async {
       _timer = Timer.periodic(
-        // check for update durationRamain each 100 millisecond
-        const Duration(milliseconds: 100),
+        widget.stepDuration,
         (_) {
           _handleDurationChanged();
         },
@@ -239,18 +241,20 @@ class _CountDownWidgetState extends State<CountDownWidget>
 
   void _handleDurationChanged() {
     final newDurationRemain = _expiredTime!.difference(DateTime.now());
-    // if new duration have same second value to old duration => do nothing
-    if (_durationRemain!.inSeconds == newDurationRemain.inSeconds) {
-      return;
-    }
-    _durationRemain = newDurationRemain;
 
-    if (_durationRemain!.inSeconds <=
-        (widget.durationExpired ?? const Duration()).inSeconds) {
+    // step remain
+    final durationStep = newDurationRemain.inMilliseconds / widget.stepDuration.inMilliseconds;
+
+    // step remain in integer
+    final durationStepCeil = durationStep.ceil();
+
+    _durationRemain = Duration(milliseconds: durationStepCeil * widget.stepDuration.inMilliseconds);
+
+    if (_durationRemain! <= widget.durationExpired) {
       widget.onExpired?.call();
     }
 
-    if (_durationRemain!.inSeconds <= 0) {
+    if (_durationRemain! <= const Duration()) {
       _durationRemain = const Duration();
       _timer!.cancel();
       widget.onFinish?.call();

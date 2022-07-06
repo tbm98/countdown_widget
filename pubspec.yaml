@@ -1,6 +1,6 @@
 name: countdown_widget
 description: A package timer works correctly even if the app is locked.
-version: 2.0.1
+version: 2.0.2
 homepage: https://github.com/tbm98/countdown_widget
 repository: https://github.com/tbm98/countdown_widget
 issue_tracker: https://github.com/tbm98/countdown_widget/issues

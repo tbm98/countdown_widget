@@ -51,8 +51,9 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         child: CountDownWidget(
           duration: Duration(seconds: 20),
+          stepDuration: Duration(milliseconds: 2000),
           builder: (context, duration) {
-            return Text(duration.inSeconds.toString());
+            return Text(duration.toString());
           },
           onControllerReady: (controller) {
             _countDownController = controller;
