@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  MyHomePage({required this.title, super.key});
   final String title;
 
   @override
@@ -28,18 +28,18 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  CountDownController _countDownController;
+  CountDownController? _countDownController;
 
   void pause() {
-    _countDownController.pause();
+    _countDownController?.pause();
   }
 
   void resume() {
-    _countDownController.resume();
+    _countDownController?.resume();
   }
 
   void restart() {
-    _countDownController.restart();
+    _countDownController?.restart();
   }
 
   @override
